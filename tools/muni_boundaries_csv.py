@@ -1,11 +1,10 @@
 # coding: utf-8
-import fetch
 import unicode_csv
+from tools import fetch
 
 __author__ = 'kobi'
 
 import time
-import sys
 
 
 def parse_csv_to_municipalities(csv_to_be_parsed, csv_parsed_successfully, csv_parsed_unsuccessfully, format="kml",

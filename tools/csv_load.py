@@ -1,8 +1,8 @@
 # coding: utf-8
-import muni_boundaries_csv
-import unicode_csv
-
 from time import gmtime, strftime
+
+import unicode_csv
+from tools import muni_boundaries_csv
 
 datestring = strftime("%d%b%Y_%H%M%S", gmtime())
 csvstring = '.csv'
