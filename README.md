@@ -1,4 +1,4 @@
-fusion_map_python
+Open_GIS_Map_Python
 =================
 
 a tool for Open Budget for Municipalities : https://github.com/hasadna/omuni-budget
