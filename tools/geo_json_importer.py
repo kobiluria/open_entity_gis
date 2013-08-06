@@ -4,9 +4,9 @@ __author__ = 'kobi_luria'
 
 import requests
 import json
-import simplejson
-from simplejson import decoder
+import objects
 import os
+import tools
 
 # END_POINTS :
 
@@ -16,25 +16,15 @@ API = 'http://api.dev.openmuni.org.il/'
 VERSION = 'v1/'
 ENTITIES = 'entities/'
 DIR_PROJECT ='/home/kobi/projects/open_gis'
-DIR = '/home/kobi/projects/open_gis/maps/'
+DIR = '/home/kobi/projects/open_gis/maps/test'
 GEO_JSON = '.geojson'
 
 
-
-def get_data_as_dict(url):
-    result = requests.get(url)
-    data = json.loads(result.text)
-    return data
-
 def write_to_directory(parent_path ,name_en, json_object):
-    path = ''
-    if parent_path:
-        dir_path = os.path.join(DIR,parent_path.rstrip(name_en)).replace(' ','_').lower()
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path)
-        path = os.path.join(dir_path,name_en+GEO_JSON).replace(' ','_').lower()
-    else :
-        path = os.path.join(DIR,name_en+GEO_JSON).replace(' ','_').lower()
+    dir_path = os.path.join(DIR ,parent_path).replace(' ','_').lower()
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+    path = os.path.join(dir_path,name_en+GEO_JSON).replace(' ','_').lower()
     f = open(path,'w+')
     json.dump(json_object,f)
 
@@ -46,12 +36,6 @@ def make_feature_collection(feature_list):
     feature_collection = {'features':feature_list}
     #TODO add a 'properties' to feature collection
 
-
-def get_parent_path(path ,result):
-    if result['parent'] == None:
-        return result['name_en']
-    path = get_parent_path(path,get_data_as_dict(result['parent']['url'])) + '/' +result['name_en']
-    return path
 
 def get_geojson_for_muni(search_string):
     url = NOMINATIM + search_string + NOMINATIM_FORMAT
@@ -70,9 +54,20 @@ def get_geojson_for_muni(search_string):
         return None
 
 
+def get_entity_polygon(entity):
+    for name in entity.search_list:
+            polygon = get_geojson_for_muni(name)
+            if polygon:
+                properties = {'name_en':entity.name_en,'id':entity.id,'code':entity.code,'copyright':'ODBL , http://www.openstreetmap.org/copyright'}
+                feature = make_feature(polygon,properties)
+                write_to_directory(entity.parent_path,entity.name_en,feature)
+                return True
+            else:
+                print '******************** didnot find ************    ' + name +'  ********** '
 
+    return False
 def get_district_and_muni(url,count):
-    data = get_data_as_dict(url)
+    data = tools.get_data_as_dict(url)
     next_page = ''
     if data['next']:
         next_page = data['next']
@@ -82,37 +77,15 @@ def get_district_and_muni(url,count):
         if not result['name_en']:
             #TODO add support for results with no english keyword
             continue # if their is no name in english. i can't store the files for now so continue.
-
-        id = result['id']
-        name_en = result['name_en']
-        if(result['parent']):
-            parent_name = get_data_as_dict(result['parent']['url'])['name']
-        code = result['code']
-        if(result['division']) :
-            division_name = get_data_as_dict(result['division']['url'])['name']
-        name_list = []
-
-        name_list.append(result['name'] + ' ISRAEL')
-        name_list.append(result['name_en'] + ' ISRAEL')
-
-        parent_path = ''
-        if(result['parent']):
-            parent_path = get_parent_path('',result)
-        for name in name_list:
-            polygon = get_geojson_for_muni(name)
-            if polygon:
-                properties = {'name_en':name_en,'id':id,'code':code,'copyright':'ODBL , http://www.openstreetmap.org/copyright'}
-                feature = make_feature(polygon,properties)
-                write_to_directory(parent_path,name_en,feature)
-                count = count + 1
-                break
-            else:
-                print '******************** didnot find ************    ' + name_en +'  ********** '
-    if(next_page):
+        entity = objects.entity(result)
+        if get_entity_polygon(entity):
+            count += 1        # if found add the count of found
+    if next_page:
         get_district_and_muni(next_page,count)
-
     return count
 
+
+#driver :
 
 count = get_district_and_muni(API+VERSION+ENTITIES+'?domains',0)
 print count
