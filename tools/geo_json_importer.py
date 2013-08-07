@@ -8,6 +8,7 @@ import objects
 import os
 import tools
 import pickle
+import subprocess
 # END_POINTS :
 
 NOMINATIM =  'http://nominatim.openstreetmap.org/search?accept-language=en-us&q='
@@ -95,11 +96,11 @@ def write_entities_to_file(entity_list):
 def write_entities_to_israel_map(entity_list):
     geojson ={'type': 'FeatureCollection','features': []}
     for entity in entity_list:
-        if entity.division_id == 1 or entity.division_id==2 :
-            entity.geojson['geometry']['type']='LineString'
+        if entity.geojson['properties']['id'] == 11:
+            continue
         geojson['features'].append(entity.geojson)
 
-    f = open('/home/kobi/projects/open_gis/the_map/THEMAP','w+')
+    f = open('/home/kobi/projects/open_gis/the_map/THEMAP.geojson','w+')
     json.dump(geojson,f)
 #driver :
 
@@ -114,5 +115,6 @@ print 'amount not found : ' + str(len(entity_list['not_found']))
 
 write_entities_to_israel_map(entity_list['found'])
 
-write_entities_to_file(entity_list['found'])
+
+#write_entities_to_file(entity_list['found'])
 
