@@ -16,6 +16,7 @@ def get_data_as_dict(url):
     :param url: the url which a request is sent to.
     :return: The python dictionary data.
     """
+    print url
     result = requests.get(url)
     data = json.loads(result.text)
     return data

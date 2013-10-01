@@ -54,13 +54,18 @@ class entity:
         """
         self.geojson = feature
 
+
+    def add_polygon(self,polygon):
+        self.polygon = polygon
+
     def __init__(self, api_result):
         """
         Init for an entity object. starts up all fields and updated the simple ones directly from th api_reslut.
-        :param api_result: an open muni API call results which is the result for this muni.
+        :param api_result : an open muni API call results which is the result for this muni.
         :return: None
         """
         self.geojson = ''
+        self.polygon = ''
         self.name_en = api_result[NAME_EN]
         self.code = api_result['code']
         self.search_list = []

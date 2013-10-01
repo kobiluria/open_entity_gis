@@ -1,4 +1,10 @@
 # coding: utf-8
+
+
+####################### To Do list ##################################
+#TODO remove all methods which involve writing , or the feature part. after pickling the data.
+
+
 __author__ = 'kobi_luria'
 
 import requests
@@ -92,15 +98,23 @@ def get_entity_polygon(entity):
         polygon = get_geojson_for_muni(name)
         if polygon:
             print '****************** found : ' + name + '*********************************'
-            properties = {'name_en': entity.name_en, 'id': entity.id, 'code': entity.code,
-                          'copyright': 'ODBL , http://www.openstreetmap.org/copyright'}
-            feature = make_feature(polygon, properties)
-            entity.add_geojson_feature(feature)
+
+            entity.add_polygon(polygon)
             return True
         else:
-            print '******************** didnot find ************    ' + name + '  ********** '
+            print '******************** did not find ************    ' + name + '  ********** '
 
     return False
+
+
+def create_features_for_entites(entity_list):
+    for entity in entity_list:
+        properties = {'name_en': entity.name_en, 'id': entity.id, 'code': entity.code,
+                          'division_id' : entity.division_id,
+                          'copyright': 'ODBL , http://www.openstreetmap.org/copyright'}
+        feature = make_feature(entity.polygon, properties)
+        entity.add_geojson_feature(feature)
+
 
 
 def get_district_and_muni(url, entity_list):
@@ -111,6 +125,7 @@ def get_district_and_muni(url, entity_list):
     :param entity_list: the entity_list this is mostly here because of the recursive behivior of the function.
     :return: returns a entity dictionary which has all entity's found and all which aren't.
     """
+    print url
     data = tools.get_data_as_dict(url)
     next_page = ''
     if data['next']:
@@ -162,12 +177,13 @@ def write_entities_to_israel_map(entity_list):
 # this is mostly because i wanted to get the GIS , and then write to file as a different proccess
 # could be changed in the future.
 
-entity_list = get_district_and_muni(API + VERSION + ENTITIES + '?domains', {'found': [], 'not_found': []})
+entity_list = get_district_and_muni(API + VERSION + ENTITIES + '?domains=1', {'found': [], 'not_found': []})
 
-pickle.dump(entity_list, open('/home/kobi/projects/open_gis/testing/entity_list_pickle', 'wb'))
+pickle.dump(entity_list, open('/home/kobi/projects/open_gis/testing/entity_list_pickle2', 'wb'))
 
-entity_list = pickle.load(open('/home/kobi/projects/open_gis/testing/entity_list_pickle', 'rb'))
+entity_list = pickle.load(open('/home/kobi/projects/open_gis/testing/entity_list_pickle2', 'rb'))
 
+create_features_for_entites(entity_list['found']) # create features for all the entites found.
 print 'amount found : ' + str(len(entity_list['found']))
 print 'amount not found : ' + str(len(entity_list['not_found']))
 
