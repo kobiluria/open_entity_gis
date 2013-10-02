@@ -22,7 +22,7 @@ API = 'http://api.dev.openmuni.org.il/'
 VERSION = 'v1/'
 ENTITIES = 'entities/'
 DIR_PROJECT = '/home/kobi/projects/open_gis'
-DIR = '/home/kobi/projects/open_gis/maps'
+DIR = '/home/kobi/projects/open_gis/jsonp/maps'
 GEO_JSON = '.geojson'
 
 #################################################################
@@ -43,7 +43,10 @@ def write_to_file(parent_path, name_en, json_object):
         os.makedirs(dir_path)
     path = os.path.join(dir_path, name_en + GEO_JSON).replace(' ', '_').lower()
     f = open(path, 'w+')
+    f.write('map_func(')
     json.dump(json_object, f)
+    f.write(')')
+    f.close()
 
 
 def make_feature(json_polygon, json_properties):
@@ -177,9 +180,9 @@ def write_entities_to_israel_map(entity_list):
 # this is mostly because i wanted to get the GIS , and then write to file as a different proccess
 # could be changed in the future.
 
-entity_list = get_district_and_muni(API + VERSION + ENTITIES + '?domains=1', {'found': [], 'not_found': []})
+#entity_list = get_district_and_muni(API + VERSION + ENTITIES + '?domains=1', {'found': [], 'not_found': []})
 
-pickle.dump(entity_list, open('/home/kobi/projects/open_gis/testing/entity_list_pickle2', 'wb'))
+#pickle.dump(entity_list, open('/home/kobi/projects/open_gis/testing/entity_list_pickle2', 'wb'))
 
 entity_list = pickle.load(open('/home/kobi/projects/open_gis/testing/entity_list_pickle2', 'rb'))
 
